@@ -22,7 +22,17 @@
             background-attachment: fixed;
             background-size:  cover;
             background-color: #999;
-        } 
+        }
+        .max-96x96 {
+            width: 96px;
+            margin: 0 auto .5rem auto !important;
+            padding: 0;
+            overflow: hidden;
+        }
+        .icon-title {
+            text-align: center;
+            color: white;
+        }
     </style>
 </head>
 
@@ -33,6 +43,7 @@
                 <div class="column is-three-fifths">
                     <b-field>
                         <b-input placeholder="DuckDuckGo Search"
+                            v-model = "searchQuery"
                             size="is-medium"
                             icon-right="magnify"
                             icon-right-clickable
@@ -41,17 +52,20 @@
                     </b-field>
                 </div>
               </div>
+              <div class="columns is-centered" style="color: white;">
+                  {{ currentTemp }}°F | {{ currentWx }}
+              </div>
               <div class="columns is-centered" style="margin-top:15%">
                 <div class="column is-three-fifths">
                     <div class="tile is-ancestor wrap">
                         <div class="tile is-parent is-3" v-for="favorite in favorites">
-                            <div class="tile is-child">
-                                <div class="box link-cursor" v-on:click="go(favorite.url)">
+                            <div class="tile is-child" v-on:click="go(favorite.url)">
+                                <div class="box max-96x96">
                                     <figure class="image is-96x96">
                                         <img v-bind:src="favorite.icon">
                                     </figure>
-                                    <h6 class="subtitle is-6">{{ favorite.title }}</h6>
                                 </div>
+                                <h6 class="subtitle is-6 icon-title" style="text-align: center;">{{ favorite.title }}</h6>
                             </div>
                         </div>
                     </div>
@@ -72,63 +86,50 @@
         new Vue({
             el: '#app',
             data: {
+                searchQuery: '',
+                currentTemp: '',
+                currentWx: '',
                 favorites: [
                     {
-                        title: "Google",
-                        url: "https://www.google.com",
-                        icon: "https://bulma.io/images/placeholders/96x96.png"
+                        title: "UNMC Outlook",
+                        url: "https://outlook.office365.com/mail/inbox",
+                        icon: "https://outlook-1.cdn.office.net/assets/mail/pwa/v1/pngs/apple-touch-icon.png"
                     },
                     {
-                        title: "Microsoft",
-                        url: "https://www.microsoft.com",
-                        icon: "https://bulma.io/images/placeholders/96x96.png"
+                        title: "Omaha Weather",
+                        url: "https://forecast.weather.gov/MapClick.php?lat=41.24595500000004&lon=-95.99415499999998",
+                        icon: "https://forecast.weather.gov/favicon.ico"
                     },
                     {
-                        title: "Microsoft",
-                        url: "https://www.microsoft.com",
-                        icon: "https://bulma.io/images/placeholders/96x96.png"
-                    },
-                    {
-                        title: "Microsoft",
-                        url: "https://www.microsoft.com",
-                        icon: "https://bulma.io/images/placeholders/96x96.png"
-                    },
-                    {
-                        title: "Google",
-                        url: "https://www.google.com",
-                        icon: "https://bulma.io/images/placeholders/96x96.png"
-                    },
-                    {
-                        title: "Google",
-                        url: "https://www.google.com",
-                        icon: "https://bulma.io/images/placeholders/96x96.png"
+                        title: "UNO Canvas",
+                        url: "https://unomaha.instructure.com",
+                        icon: "https://du11hjcvx0uqb.cloudfront.net/br/dist/images/apple-touch-icon-585e5d997d.png"
                     }
                 ]
             },
+            beforeMount(){
+                const xhr = new XMLHttpRequest()
+                const url = 'https://api.weather.gov/stations/koma/observations/latest'
+                xhr.open('GET', url)
+                xhr.setRequestHeader('accept', 'application/ld+json')
+                xhr.responseType = 'json'
+                xhr.onload = () => {
+                    this.currentTemp = Math.round(xhr.response.temperature.value * 1.8 + 32)
+                    this.currentWx = xhr.response.textDescription
+                }
+                xhr.send()
+            },
             methods: {
+                search(){
+                    window.location.assign("https://www.duckduckgo.com/?q=" + this.searchQuery)
+                },
                 go(url){
                     window.location.assign(url)
-                },
-                search(){
-                    fetch("https://duckduckgo.com/ac/?q=h&kl=wt-wt", {
-                        "headers": {
-                            "accept": "application/json, text/javascript, */*; q=0.01",
-                            "accept-language": "en-US,en;q=0.9",
-                            "sec-fetch-dest": "empty",
-                            "sec-fetch-mode": "cors",
-                            "sec-fetch-site": "same-origin",
-                            "x-requested-with": "XMLHttpRequest"
-                        },
-                        "referrer": "https://duckduckgo.com/",
-                        "referrerPolicy": "origin",
-                        "body": null,
-                        "method": "GET",
-                        "mode": "cors"
-                    });
                 }
             }
         })
     </script>
 </body>
 </html>
+
 
