@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.3.45/css/materialdesignicons.min.css">
     <link rel="stylesheet" href="https://unpkg.com/buefy/dist/buefy.min.css">
+    <script src="https://unpkg.com/vue"></script>
+    <script src="https://unpkg.com/buefy/dist/buefy.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/validator/13.1.17/validator.min.js" integrity="sha512-p1b+doSyVwyKqVTZeU1+XJtjpBSkhllBca2L6QTxPUjZZ0ELeZIHkAeQdtfNulbXxLdCwN4uKYGPpp78xeqwfQ==" crossorigin="anonymous"></script>
+
     <style>
         .margin-auto {
             margin: auto;
@@ -33,6 +37,9 @@
             text-align: center;
             color: white;
         }
+        .wx-hidden {
+            display: none;
+        }
     </style>
 </head>
 
@@ -47,13 +54,17 @@
                             size="is-medium"
                             icon-right="magnify"
                             icon-right-clickable
-                            @icon-right-click="search">
+                            @icon-right-click="search"
+                            @keyup.native="detectSearch"
+                            ref = "searchbar"
+                        >
                         </b-input>
                     </b-field>
                 </div>
               </div>
               <div class="columns is-centered" style="color: white;">
-                  {{ currentTemp }}°F | {{ currentWx }}
+                <span v-if="!wxLoading">{{ currentTemp }}°F | {{ currentWx }}</span>
+                <b-skeleton :active="wxLoading" position="is-centered" height="24px" width="30%"></b-skeleton>
               </div>
               <div class="columns is-centered" style="margin-top:15%">
                 <div class="column is-three-fifths">
@@ -74,18 +85,11 @@
         </div>
     </div>
 
-    <script src="https://unpkg.com/vue"></script>
-    <!-- Full bundle -->
-    <script src="https://unpkg.com/buefy/dist/buefy.min.js"></script>
-
-    <!-- Individual components -->
-    <script src="https://unpkg.com/buefy/dist/components/table"></script>
-    <script src="https://unpkg.com/buefy/dist/components/input"></script>
-
     <script>
         new Vue({
             el: '#app',
             data: {
+                wxLoading: true,
                 searchQuery: '',
                 currentTemp: '',
                 currentWx: '',
@@ -107,21 +111,40 @@
                     }
                 ]
             },
-            beforeMount(){
-                const xhr = new XMLHttpRequest()
-                const url = 'https://api.weather.gov/stations/koma/observations/latest'
-                xhr.open('GET', url)
-                xhr.setRequestHeader('accept', 'application/ld+json')
-                xhr.responseType = 'json'
-                xhr.onload = () => {
-                    this.currentTemp = Math.round(xhr.response.temperature.value * 1.8 + 32)
-                    this.currentWx = xhr.response.textDescription
-                }
-                xhr.send()
+            mounted(){
+                this.getWx()
+                this.$refs.searchbar.focus()
             },
             methods: {
+                getWx(){
+                    const xhr = new XMLHttpRequest()
+                    const url = 'https://api.weather.gov/stations/koma/observations/latest'
+                    xhr.open('GET', url)
+                    xhr.setRequestHeader('accept', 'application/ld+json')
+                    xhr.responseType = 'json'
+                    xhr.onload = () => {
+                        var vm = this
+                        this.currentTemp = Math.round(xhr.response.temperature.value * 1.8 + 32)
+                        vm.currentWx = xhr.response.textDescription
+                        window.setTimeout(function(){ vm.wxLoading = false }, 1000);
+                    }
+                xhr.send()
+                },
                 search(){
-                    window.location.assign("https://www.duckduckgo.com/?q=" + this.searchQuery)
+                    if (validator.isURL(this.searchQuery)) {
+                        if (validator.isURL(this.searchQuery, { require_protocol: true })) {
+                            window.location.assign(this.searchQuery)
+                        } else {
+                            window.location.assign("https://" + this.searchQuery)
+                        }
+                    } else {
+                        window.location.assign("https://www.duckduckgo.com/?q=" + this.searchQuery)
+                    }
+                },
+                detectSearch(e){
+                    if (e.key === 'Enter' || e.keyCode === 13) {
+                        this.search()
+                    }
                 },
                 go(url){
                     window.location.assign(url)
