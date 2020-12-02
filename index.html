@@ -100,6 +100,11 @@
                         icon: "https://outlook-1.cdn.office.net/assets/mail/pwa/v1/pngs/apple-touch-icon.png"
                     },
                     {
+                        title: "UNMC AppStore",
+                        url: "https://appstore.unmc.edu",
+                        icon: "https://nebraskamed.vmwareidentity.com/SAAS/jersey/manager/api/images/524133"
+                    },
+                    {
                         title: "Omaha Weather",
                         url: "https://forecast.weather.gov/MapClick.php?lat=41.24595500000004&lon=-95.99415499999998",
                         icon: "https://forecast.weather.gov/favicon.ico"
@@ -113,7 +118,7 @@
             },
             mounted(){
                 this.getWx()
-                this.$refs.searchbar.focus()
+                //this.$refs.searchbar.focus()
             },
             methods: {
                 getWx(){
