@@ -10,6 +10,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/validator/13.1.17/validator.min.js" integrity="sha512-p1b+doSyVwyKqVTZeU1+XJtjpBSkhllBca2L6QTxPUjZZ0ELeZIHkAeQdtfNulbXxLdCwN4uKYGPpp78xeqwfQ==" crossorigin="anonymous"></script>
 
     <style>
+        .container > .columns {
+            margin-top: 2rem;
+        }
         .margin-auto {
             margin: auto;
         }
@@ -20,7 +23,7 @@
             cursor: pointer;
         }
         .bg-img { 
-            background-image: url("https://images.unsplash.com/photo-1606622683770-4bca744e9c01?ixid=MXwxODcxOTd8MHwxfGFsbHx8fHx8fHx8&ixlib=rb-1.2.1") ;
+            background-image: url("https://images.unsplash.com/photo-1598202785865-bf596364901e?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80") ;
             background-position: center center;
             background-repeat:  no-repeat;
             background-attachment: fixed;
@@ -46,27 +49,26 @@
 <body>
     <div id="app">
         <div class="container">
-            <div class="columns is-centered" style="margin-top:15%">
-                <div class="column is-three-fifths">
-                    <b-field>
-                        <b-input placeholder="DuckDuckGo Search"
-                            v-model = "searchQuery"
-                            size="is-medium"
-                            icon-right="magnify"
-                            icon-right-clickable
-                            @icon-right-click="search"
-                            @keyup.native="detectSearch"
-                            ref = "searchbar"
-                        >
-                        </b-input>
-                    </b-field>
+              <div class="columns is-centered block" style="color: white;">
+                <div class="column is-narrow">
+                    <h5>Current Conditions</h5>
+                    <span v-if="!wxLoading">{{ currentTemp }}°F | {{ currentWx }}</span>
+                    <b-skeleton :active="wxLoading" position="is-centered" height="24px" width="30%"></b-skeleton>
                 </div>
-              </div>
-              <div class="columns is-centered" style="color: white;">
-                <span v-if="!wxLoading">{{ currentTemp }}°F | {{ currentWx }}</span>
-                <b-skeleton :active="wxLoading" position="is-centered" height="24px" width="30%"></b-skeleton>
-              </div>
-              <div class="columns is-centered" style="margin-top:15%">
+            </div>
+            <div class="columns is-mobile is-multiline is-centered">
+                <div v-for="forecast in wxForecast" class="column is-narrow">
+                    <div class="has-text-centered" style="width: 150px;color:white;">
+                        {{ forecast.name }}
+                        <figure class="image is-64x64" style="margin:auto;border-radius: 5px;overflow: hidden;">
+                            <img :src="forecast.icon">
+                        </figure>
+                        <p>{{ forecast.shortForecast }}</p>
+                        <p>{{ forecast.temperature }}°{{ forecast.temperatureUnit}}</p>
+                    </div>
+                </div>
+            </div>
+              <div class="columns is-centered">
                 <div class="column is-three-fifths">
                     <div class="tile is-ancestor wrap">
                         <div class="tile is-parent is-3" v-for="favorite in favorites">
@@ -93,6 +95,7 @@
                 searchQuery: '',
                 currentTemp: '',
                 currentWx: '',
+                wxForecast: [],
                 favorites: [
                     {
                         title: "UNMC Outlook",
@@ -103,6 +106,11 @@
                         title: "UNMC AppStore",
                         url: "https://appstore.unmc.edu",
                         icon: "https://logo.clearbit.com/unmc.edu"
+                    },
+                    {
+                        title: "UNMC Operational Analytics",
+                        url: "https://univnebrmedcntr.sharepoint.com/sites/vcresearch/analytics/",
+                        icon: "https://is4-ssl.mzstatic.com/image/thumb/Purple113/v4/96/f9/3d/96f93d70-a8bd-2e49-3694-8bfc4a24ad6f/source/512x512bb.jpg"
                     },
                     {
                         title: "Omaha Weather",
@@ -123,7 +131,7 @@
             },
             mounted(){
                 this.getWx()
-                //this.$refs.searchbar.focus()
+                this.getWxForecast()
             },
             methods: {
                 getWx(){
@@ -140,21 +148,17 @@
                     }
                 xhr.send()
                 },
-                search(){
-                    if (validator.isURL(this.searchQuery)) {
-                        if (validator.isURL(this.searchQuery, { require_protocol: true })) {
-                            window.location.assign(this.searchQuery)
-                        } else {
-                            window.location.assign("https://" + this.searchQuery)
-                        }
-                    } else {
-                        window.location.assign("https://www.duckduckgo.com/?q=" + this.searchQuery)
+                getWxForecast(){
+                    const xhr = new XMLHttpRequest()
+                    const url = 'https://api.weather.gov/gridpoints/OAX/80,58/forecast'
+                    xhr.open('GET', url)
+                    xhr.setRequestHeader('accept', 'application/ld+json')
+                    xhr.responseType = 'json'
+                    xhr.onload = () => {
+                        var vm = this
+                        this.wxForecast = xhr.response.periods.slice(0,6)
                     }
-                },
-                detectSearch(e){
-                    if (e.key === 'Enter' || e.keyCode === 13) {
-                        this.search()
-                    }
+                    xhr.send()
                 },
                 go(url){
                     window.location.assign(url)
