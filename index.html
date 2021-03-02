@@ -144,7 +144,7 @@
                         var vm = this
                         this.currentTemp = Math.round(xhr.response.temperature.value * 1.8 + 32)
                         vm.currentWx = xhr.response.textDescription
-                        window.setTimeout(function(){ vm.wxLoading = false }, 1000);
+                        vm.wxLoading = false
                     }
                 xhr.send()
                 },
