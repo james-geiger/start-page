@@ -1,15 +1,19 @@
 <!DOCTYPE html>
-<html class="bg-img">
+<html id="app">
 <head>
+    <title>New Tab</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.3.45/css/materialdesignicons.min.css">
-    <link rel="stylesheet" href="https://unpkg.com/buefy/dist/buefy.min.css">
-    <script src="https://unpkg.com/vue"></script>
-    <script src="https://unpkg.com/buefy/dist/buefy.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/validator/13.1.17/validator.min.js" integrity="sha512-p1b+doSyVwyKqVTZeU1+XJtjpBSkhllBca2L6QTxPUjZZ0ELeZIHkAeQdtfNulbXxLdCwN4uKYGPpp78xeqwfQ==" crossorigin="anonymous"></script>
-
+    <link rel="stylesheet" href="/css/bulma.min.css">
     <style>
+        #app { 
+            background-color: black;
+            background-position: center center;
+            background-repeat:  no-repeat;
+            background-attachment: fixed;
+            background-size:  cover;
+            background-color: #999;
+        }
         .container > .columns {
             margin-top: 2rem;
         }
@@ -21,14 +25,6 @@
         }
         .link-cursor {
             cursor: pointer;
-        }
-        .bg-img { 
-            background-image: url("https://images.unsplash.com/photo-1598202785865-bf596364901e?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80") ;
-            background-position: center center;
-            background-repeat:  no-repeat;
-            background-attachment: fixed;
-            background-size:  cover;
-            background-color: #999;
         }
         .max-96x96 {
             width: 96px;
@@ -46,127 +42,25 @@
     </style>
 </head>
 
-<body>
-    <div id="app">
+    <body>
         <div class="container">
-              <div class="columns is-centered block" style="color: white;">
+            <div class="columns is-centered block" style="color: white;">
                 <div class="column is-narrow has-text-centered">
                     <h5>Current Conditions</h5>
-                    <span v-if="!wxLoading">{{ currentTemp }}°F | {{ currentWx }}</span>
-                    <b-skeleton :active="wxLoading" position="is-centered" height="24px" width="30%"></b-skeleton>
+                    <span><span id="currentTemp"></span>°F | <span id="currentWx"></span></span>
                 </div>
             </div>
-            <div class="columns is-mobile is-multiline is-centered">
-                <div v-for="forecast in wxForecast" class="column is-narrow">
-                    <div class="has-text-centered" style="width: 150px;color:white;">
-                        {{ forecast.name }}
-                        <figure class="image is-64x64" style="margin:auto;border-radius: 5px;overflow: hidden;">
-                            <img :src="forecast.icon">
-                        </figure>
-                        <p>{{ forecast.shortForecast }}</p>
-                        <p>{{ forecast.temperature }}°{{ forecast.temperatureUnit}}</p>
-                    </div>
-                </div>
+            <div id="forecast" class="columns is-mobile is-multiline is-centered">
             </div>
-              <div class="columns is-centered">
+            <div class="columns is-centered">
                 <div class="column is-three-fifths">
-                    <div class="tile is-ancestor wrap">
-                        <div class="tile is-parent is-3" v-for="favorite in favorites">
-                            <div class="tile is-child" v-on:click="go(favorite.url)">
-                                <div class="box max-96x96">
-                                    <figure class="image is-96x96">
-                                        <img v-bind:src="favorite.icon">
-                                    </figure>
-                                </div>
-                                <h6 class="subtitle is-6 icon-title" style="text-align: center;">{{ favorite.title }}</h6>
-                            </div>
-                        </div>
+                    <div id="favorites" class="tile is-ancestor wrap">
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-
-    <script>
-        new Vue({
-            el: '#app',
-            data: {
-                wxLoading: true,
-                searchQuery: '',
-                currentTemp: '',
-                currentWx: '',
-                wxForecast: [],
-                favorites: [
-                    {
-                        title: "UNMC Outlook",
-                        url: "https://outlook.office365.com/mail/inbox",
-                        icon: "https://outlook-1.cdn.office.net/assets/mail/pwa/v1/pngs/apple-touch-icon.png"
-                    },
-                    {
-                        title: "UNMC AppStore",
-                        url: "https://appstore.unmc.edu",
-                        icon: "https://logo.clearbit.com/unmc.edu"
-                    },
-                    {
-                        title: "UNMC Operational Analytics",
-                        url: "https://univnebrmedcntr.sharepoint.com/sites/vcresearch/analytics/",
-                        icon: "https://is4-ssl.mzstatic.com/image/thumb/Purple113/v4/96/f9/3d/96f93d70-a8bd-2e49-3694-8bfc4a24ad6f/source/512x512bb.jpg"
-                    },
-                    {
-                        title: "Omaha Weather",
-                        url: "https://forecast.weather.gov/MapClick.php?lat=41.24595500000004&lon=-95.99415499999998",
-                        icon: "https://logo.clearbit.com/forecast.weather.gov"
-                    },
-                    {
-                        title: "Omaha Radar",
-                        url: "https://radar.weather.gov/?settings=v1_eyJhZ2VuZGEiOnsiaWQiOiJ3ZWF0aGVyIiwiY2VudGVyIjpbLTk2LjAwMiw0MS4yNDVdLCJ6b29tIjo3LCJsb2NhdGlvbiI6Wy05Ni4wMDIsNDEuMjQ1XX0sImJhc2UiOiJzdGFuZGFyZCIsImNvdW50eSI6ZmFsc2UsImN3YSI6ZmFsc2UsInN0YXRlIjpmYWxzZSwibWVudSI6dHJ1ZSwic2hvcnRGdXNlZE9ubHkiOmZhbHNlfQ%3D%3D#/",
-                        icon: "http://logo.clearbit.com/radar.weather.gov"
-                    },
-                    {
-                        title: "UNO Canvas",
-                        url: "https://unomaha.instructure.com",
-                        icon: "https://du11hjcvx0uqb.cloudfront.net/br/dist/images/apple-touch-icon-585e5d997d.png"
-                    }
-                ]
-            },
-            mounted(){
-                this.getWx()
-                this.getWxForecast()
-            },
-            methods: {
-                getWx(){
-                    const xhr = new XMLHttpRequest()
-                    const url = 'https://api.weather.gov/stations/koma/observations/latest'
-                    xhr.open('GET', url)
-                    xhr.setRequestHeader('accept', 'application/ld+json')
-                    xhr.responseType = 'json'
-                    xhr.onload = () => {
-                        var vm = this
-                        this.currentTemp = Math.round(xhr.response.temperature.value * 1.8 + 32)
-                        vm.currentWx = xhr.response.textDescription
-                        vm.wxLoading = false
-                    }
-                xhr.send()
-                },
-                getWxForecast(){
-                    const xhr = new XMLHttpRequest()
-                    const url = 'https://api.weather.gov/gridpoints/OAX/80,58/forecast'
-                    xhr.open('GET', url)
-                    xhr.setRequestHeader('accept', 'application/ld+json')
-                    xhr.responseType = 'json'
-                    xhr.onload = () => {
-                        var vm = this
-                        this.wxForecast = xhr.response.periods.slice(0,6)
-                    }
-                    xhr.send()
-                },
-                go(url){
-                    window.location.assign(url)
-                }
-            }
-        })
-    </script>
-</body>
+        <script src="index.js"></script>
+    </body>
 </html>
 
 
