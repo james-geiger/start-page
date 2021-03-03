@@ -50,7 +50,7 @@
     <div id="app">
         <div class="container">
               <div class="columns is-centered block" style="color: white;">
-                <div class="column is-narrow">
+                <div class="column is-narrow has-text-centered">
                     <h5>Current Conditions</h5>
                     <span v-if="!wxLoading">{{ currentTemp }}°F | {{ currentWx }}</span>
                     <b-skeleton :active="wxLoading" position="is-centered" height="24px" width="30%"></b-skeleton>
